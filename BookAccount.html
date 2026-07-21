@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<meta name="theme-color" content="#F7F9FC" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-title" content="영어 독서 통장" />
+<title>쑥쑥 영어 독서 통장 📚</title>
+<style>
+  /* ── Clean Minimalism tokens ───────────────────────────── */
+  :root{
+    --bg:#F7F9FC; --card:#FFFFFF; --ink:#2D3748; --sub:#718096;
+    --muted:#A0AEC0; --line:#EDF2F7; --soft:#F7FAFC;
+    --accent:#3B82F6; --accent-soft:#EFF6FF; --accent-line:#BFDBFE;
+    --radius:32px;
+  }
+  body[data-child="민결"]{
+    --accent:#EC4899; --accent-soft:#FDF2F8; --accent-line:#FBCFE8;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;padding:0}
+  body{
+    min-height:100vh; background:var(--bg); color:var(--ink);
+    font-family:system-ui,-apple-system,"Apple SD Gothic Neo","Malgun Gothic","맑은 고딕",sans-serif;
+    -webkit-user-select:none; user-select:none; padding-bottom:24px;
+    overflow-x:hidden;
+  }
+  button{font:inherit;color:inherit;border:none;background:none;cursor:pointer}
+  .wrap{width:100%;max-width:1120px;margin:0 auto;padding:0 20px}
+
+  /* ── Top utility bar ───────────────────────────────────── */
+  .topbar{display:flex;justify-content:space-between;align-items:center;padding-top:14px;
+    font-size:12px;font-weight:700;color:var(--muted)}
+  .topbar .tools{display:flex;gap:6px}
+  .topbar .tools button{padding:6px 10px;border-radius:10px;font-size:12px;font-weight:700;
+    color:var(--muted);transition:background .15s,color .15s}
+  .topbar .tools button:hover{background:#EDF2F7;color:var(--sub)}
+
+  /* ── Header ────────────────────────────────────────────── */
+  header{display:flex;flex-wrap:wrap;gap:16px;align-items:center;justify-content:space-between;
+    padding:18px 0 20px;margin-bottom:24px;border-bottom:1px solid var(--line)}
+  .brand{display:flex;align-items:center;gap:12px}
+  .brand .logo{width:42px;height:42px;border-radius:50%;background:#FACC15;display:flex;
+    align-items:center;justify-content:center;font-size:22px;box-shadow:0 1px 3px rgba(0,0,0,.08)}
+  .brand h1{margin:0;font-size:24px;font-weight:800;letter-spacing:-.5px}
+  .tabs{display:flex;gap:4px;background:#EDF2F7;padding:5px;border-radius:18px}
+  .tab{padding:9px 30px;border-radius:14px;font-size:17px;font-weight:800;color:var(--muted);
+    transition:all .18s}
+  .tab.on{background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.07)}
+  .tab.on[data-name="민건"]{color:#3B82F6}
+  .tab.on[data-name="민결"]{color:#EC4899}
+
+  /* ── Layout ────────────────────────────────────────────── */
+  main{display:flex;gap:26px;align-items:stretch}
+  .col-left{width:41%;display:flex;flex-direction:column;gap:22px}
+  .col-right{flex:1;display:flex;flex-direction:column}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
+    padding:28px;box-shadow:0 1px 2px rgba(16,24,40,.04)}
+  .label{font-size:11px;font-weight:800;letter-spacing:1.4px;text-transform:uppercase;color:var(--muted)}
+
+  /* ── Today mission ─────────────────────────────────────── */
+  .mission-title{margin:6px 0 22px;font-size:30px;font-weight:800;color:var(--accent);letter-spacing:-.8px}
+  .missions{display:flex;flex-direction:column;gap:14px}
+  .mission{display:flex;align-items:center;gap:18px;width:100%;text-align:left;padding:18px 20px;
+    border-radius:24px;border:3px solid transparent;background:var(--soft);color:var(--sub);
+    font-size:18px;font-weight:700;transition:all .15s}
+  .mission:hover{background:#EDF2F7}
+  .mission .ico{font-size:32px;line-height:1}
+  .mission.done{background:var(--accent-soft);border-color:var(--accent-line);color:var(--ink)}
+  .mission:active{transform:scale(.97)}
+  .mission.locked{opacity:.72;cursor:default}
+  .mission.locked:active{transform:none}
+
+  .stamp-btn{margin-top:22px;width:100%;padding:20px;border-radius:24px;font-size:20px;
+    font-weight:800;color:#fff;background:#CBD5E0;box-shadow:0 6px 16px rgba(16,24,40,.08);
+    transition:transform .12s,background .2s}
+  .stamp-btn.ready{background:var(--accent);animation:pulse 2s infinite ease-in-out}
+  .stamp-btn.ready:active{transform:scale(.97)}
+  .stamp-btn.off{cursor:default}
+  @keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.025)}}
+
+  /* ── Emoji picker ──────────────────────────────────────── */
+  .emoji-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:12px}
+  .emoji-btn{aspect-ratio:1;border-radius:14px;border:2px solid transparent;background:#F7FAFC;
+    font-size:26px;display:flex;align-items:center;justify-content:center;transition:all .15s}
+  .emoji-btn:hover{background:#EDF2F7}
+  .emoji-btn.on{border-color:var(--ink);background:#F1F5F9;transform:scale(1.06)}
+
+  /* ── Stamp board ───────────────────────────────────────── */
+  .board-head{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;
+    padding-bottom:16px;margin-bottom:20px;border-bottom:1px solid var(--line)}
+  .board-head h2{margin:0;font-size:22px;font-weight:800;letter-spacing:-.5px}
+  .board-head .count{color:#CBD5E0;font-size:17px;font-weight:700;margin-left:8px}
+  .link-btn{font-size:12px;font-weight:700;color:var(--muted);transition:color .15s}
+  .link-btn:hover{color:#EF4444}
+
+  .grid30{display:grid;grid-template-columns:repeat(6,1fr);gap:10px;max-width:520px;margin:0 auto;width:100%}
+  .slot{position:relative;aspect-ratio:1;border-radius:18px;display:flex;align-items:center;
+    justify-content:center}
+  .slot .empty{width:100%;height:100%;border-radius:18px;border:2px dashed #E2E8F0;
+    background:#FAFCFE;display:flex;align-items:center;justify-content:center;
+    color:#E2E8F0;font-size:15px;font-weight:800}
+  .slot .filled{width:100%;height:100%;border-radius:18px;border:2px solid var(--accent-line);
+    background:var(--accent-soft);display:flex;align-items:center;justify-content:center;
+    font-size:clamp(20px,3.6vw,30px);box-shadow:inset 0 2px 4px rgba(16,24,40,.05);
+    animation:pop .35s cubic-bezier(.34,1.56,.64,1)}
+  @keyframes pop{0%{transform:scale(.2);opacity:0}100%{transform:scale(1);opacity:1}}
+  .slot .gift{position:absolute;top:-6px;right:-4px;font-size:13px}
+
+  /* ── History ───────────────────────────────────────────── */
+  .history{margin-top:28px;padding-top:22px;border-top:1px solid var(--line)}
+  .hist-list{max-height:148px;overflow-y:auto;display:flex;flex-direction:column;gap:7px;
+    margin-top:12px;padding-right:4px}
+  .hist-row{display:flex;justify-content:space-between;align-items:center;padding:9px 14px;
+    background:#F8FAFC;border:1px solid #F1F5F9;border-radius:12px;font-size:12px;font-weight:700;color:var(--sub)}
+  .hist-row .idx{display:inline-flex;width:18px;height:18px;border-radius:50%;background:#E2E8F0;
+    color:#4A5568;align-items:center;justify-content:center;font-size:10px;margin-right:8px}
+  .hist-empty{text-align:center;padding:16px 0;font-size:12px;font-weight:600;color:#CBD5E0}
+
+  /* ── Advice + footer ───────────────────────────────────── */
+  .advice{margin-top:28px;background:#fff;border:1px solid var(--line);border-radius:24px;
+    padding:18px;text-align:center;font-size:13px;font-weight:600;color:var(--sub);line-height:1.7}
+  .advice b{color:var(--ink)}
+  footer{text-align:center;padding:26px 0 8px;font-size:12px;font-weight:600;color:#CBD5E0}
+
+  /* ── Modals ────────────────────────────────────────────── */
+  .modal-bg{position:fixed;inset:0;background:rgba(15,23,42,.42);backdrop-filter:blur(6px);
+    display:flex;align-items:center;justify-content:center;padding:18px;z-index:50}
+  .modal{position:relative;z-index:2;width:100%;max-width:460px;background:#fff;border-radius:36px;
+    padding:36px;box-shadow:0 24px 60px rgba(16,24,40,.24);max-height:90vh;overflow-y:auto}
+  .modal.celebrate{text-align:center;max-width:520px}
+  .modal.celebrate .party{font-size:74px;animation:bounce 1s infinite}
+  @keyframes bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-14px)}}
+  .modal.celebrate h2{margin:14px 0 12px;font-size:34px;font-weight:800}
+  .modal.celebrate p{margin:0 0 28px;font-size:18px;font-weight:700;color:var(--sub);line-height:1.7}
+  .btn-gold{width:100%;padding:20px;border-radius:24px;background:#FACC15;color:#713F12;
+    font-size:21px;font-weight:800;box-shadow:0 6px 16px rgba(250,204,21,.35)}
+  .btn-gold:active{transform:scale(.97)}
+  .btn-ghost{width:100%;padding:12px;margin-top:10px;font-size:12px;font-weight:700;color:var(--muted)}
+  .btn-dark{width:100%;padding:14px;border-radius:14px;background:#1F2937;color:#fff;
+    font-size:13px;font-weight:800}
+
+  .confetti{position:absolute;inset:0;overflow:hidden;pointer-events:none;z-index:1}
+  .confetti i{position:absolute;top:-16px;width:10px;height:10px;border-radius:50%;opacity:.7;
+    animation:fall 3s linear infinite}
+  @keyframes fall{0%{transform:translateY(-20px) rotate(0)}100%{transform:translateY(105vh) rotate(360deg)}}
+
+  /* ── Parent gate ───────────────────────────────────────── */
+  .modal h3{margin:0;font-size:18px;font-weight:800}
+  .modal-head{display:flex;justify-content:space-between;align-items:center;
+    padding-bottom:14px;margin-bottom:22px;border-bottom:1px solid var(--line)}
+  .modal-head button{font-size:22px;color:var(--muted);line-height:1}
+  .quiz{background:#F8FAFC;border:1px solid var(--line);border-radius:18px;padding:18px;
+    text-align:center;font-size:24px;font-weight:800;color:#4A5568;margin:0 auto 20px;max-width:260px}
+  .quiz-row{display:flex;gap:8px;max-width:260px;margin:0 auto}
+  .quiz-row input{flex:1;padding:12px;border-radius:12px;border:2px solid var(--line);background:#F8FAFC;
+    text-align:center;font-size:18px;font-weight:800;font-family:inherit;outline:none;min-width:0}
+  .quiz-row input:focus{border-color:var(--ink);background:#fff}
+  .quiz-row button{padding:0 22px;border-radius:12px;background:#1F2937;color:#fff;font-size:14px;font-weight:800}
+  .quiz-msg{margin:14px 0 0;text-align:center;font-size:12px;font-weight:700;color:#EF4444}
+  .gate-desc{text-align:center;font-size:12px;font-weight:600;color:var(--muted);line-height:1.7;margin:0 0 22px}
+
+  .unlocked-tag{background:#ECFDF5;border:1px solid #D1FAE5;color:#047857;padding:12px 14px;
+    border-radius:16px;font-size:12px;font-weight:700;margin-bottom:18px}
+  .kid-box{border:1px solid var(--line);border-radius:18px;padding:16px;background:#FAFCFE;margin-bottom:14px}
+  .kid-box .top{display:flex;justify-content:space-between;align-items:center;padding-bottom:10px;
+    margin-bottom:12px;border-bottom:1px dashed #E2E8F0;font-size:13px;font-weight:800}
+  .kid-box .top span:last-child{color:var(--muted);font-size:12px}
+  .stepper{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:14px;
+    font-size:12px;font-weight:700;color:var(--muted)}
+  .stepper .ctrl{display:flex;align-items:center;gap:8px}
+  .stepper .ctrl button{width:32px;height:32px;border-radius:10px;background:#fff;border:1px solid var(--line);
+    font-size:15px;font-weight:800;color:var(--sub);box-shadow:0 1px 2px rgba(0,0,0,.04)}
+  .stepper .ctrl button:disabled{opacity:.35;cursor:default}
+  .stepper .ctrl .val{width:26px;text-align:center;font-size:14px;font-weight:800;color:var(--ink)}
+  .kid-box .row{display:flex;gap:8px}
+  .kid-box .row button{flex:1;padding:9px;border-radius:12px;font-size:11px;font-weight:800}
+  .btn-plain{background:#fff;border:1px solid var(--line);color:var(--sub)}
+  .btn-danger{background:#FEF2F2;color:#DC2626}
+
+  /* ── Responsive ────────────────────────────────────────── */
+  @media (max-width:1000px){
+    main{flex-direction:column}
+    .col-left{width:100%}
+    .card{padding:24px;border-radius:28px}
+    .grid30{grid-template-columns:repeat(5,1fr)}
+  }
+  @media (max-width:560px){
+    .wrap{padding:0 14px}
+    header{padding:14px 0 16px;margin-bottom:18px}
+    .brand h1{font-size:20px}
+    .tabs{width:100%}
+    .tab{flex:1;padding:10px 0;text-align:center}
+    .mission-title{font-size:25px}
+    .mission{padding:15px 16px;font-size:16px;gap:14px}
+    .mission .ico{font-size:27px}
+    .grid30{gap:8px}
+    .modal{padding:26px;border-radius:28px}
+    .modal.celebrate h2{font-size:27px}
+    .modal.celebrate p{font-size:16px}
+  }
+</style>
+</head>
+<body data-child="민건">
+<div id="root"></div>
+
+<script>
+(function () {
+  'use strict';
+
+  /* ══ 설정 ══════════════════════════════════════════════ */
+  var KIDS = ['민건', '민결'];
+  var GOAL = 30;                     // 스탬프 판 한 장 = 30칸
+  var BOOKS_PER_DAY = 3;             // 하루 미션: 영어책 3권
+  var STORAGE_KEY = 'kids_reading_stamps_v4';
+
+  var STAMP_OPTIONS = [
+    { emoji: '🦊', label: '여우' },   { emoji: '🐼', label: '판다' },
+    { emoji: '🦖', label: '공룡' },   { emoji: '🧸', label: '아기곰' },
+    { emoji: '🌟', label: '황금별' }, { emoji: '🐾', label: '발자국' },
+    { emoji: '🚀', label: '로켓' },   { emoji: '🍎', label: '사과' }
+  ];
+  var BOOK_LABELS = ['첫 번째 영어 책 읽기', '두 번째 영어 책 읽기', '세 번째 영어 책 읽기'];
+  var CONFETTI_COLORS = ['#FACC15', '#60A5FA', '#F472B6', '#34D399', '#A78BFA', '#FB923C'];
+
+  /* ══ 날짜 유틸 ═════════════════════════════════════════ */
+  function todayStr() {
+    var d = new Date();
+    return d.getFullYear() + '-' +
+      String(d.getMonth() + 1).padStart(2, '0') + '-' +
+      String(d.getDate()).padStart(2, '0');
+  }
+  function formatKoreanDate(s) {
+    var p = String(s).split('-');
+    if (p.length !== 3) return s;
+    var d = new Date(+p[0], +p[1] - 1, +p[2]);
+    if (isNaN(d)) return s;
+    return +p[1] + '월 ' + +p[2] + '일 (' + '일월화수목금토'[d.getDay()] + '요일)';
+  }
+
+  /* ══ 상태 ══════════════════════════════════════════════ */
+  var state = {
+    kids: null,
+    active: KIDS[0],
+    muted: false,
+    today: todayStr(),
+    parentOpen: false,
+    parentUnlocked: false,
+    quiz: null,
+    quizError: false,
+    celebrate: null
+  };
+
+  function defaultKid(name) {
+    return {
+      name: name,
+      booksRead: [false, false, false],
+      lastCheckDate: state.today,
+      // history: [{ d:'YYYY-MM-DD', m:true(부모님 수동 조정) }] — 스탬프 개수는 여기서 파생
+      history: [],
+      rewardReceived: false,
+      stampEmoji: name === KIDS[0] ? '🦊' : '🐼'
+    };
+  }
+
+  function load() {
+    var data = {};
+    try {
+      var raw = localStorage.getItem(STORAGE_KEY);
+      if (raw) {
+        var saved = JSON.parse(raw);
+        data = saved.kids || {};
+        state.muted = !!saved.muted;
+      }
+    } catch (e) { data = {}; }
+
+    KIDS.forEach(function (name) {
+      var k = data[name];
+      if (!k || typeof k !== 'object') { data[name] = defaultKid(name); return; }
+      k.name = name;
+      if (!Array.isArray(k.history)) k.history = [];
+      if (!Array.isArray(k.booksRead) || k.booksRead.length !== BOOKS_PER_DAY) {
+        k.booksRead = [false, false, false];
+      }
+      if (!k.stampEmoji) k.stampEmoji = defaultKid(name).stampEmoji;
+    });
+    state.kids = data;
+    rollover();
+  }
+
+  function save() {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({ kids: state.kids, muted: state.muted }));
+    } catch (e) { /* 저장 공간이 없어도 앱은 계속 동작 */ }
+  }
+
+  /* 날짜가 바뀌면 오늘의 미션을 새로 시작 */
+  function rollover() {
+    var t = state.today;
+    KIDS.forEach(function (name) {
+      var k = state.kids[name];
+      if (stampedToday(k)) { k.booksRead = [true, true, true]; k.lastCheckDate = t; }
+      else if (k.lastCheckDate !== t) { k.booksRead = [false, false, false]; k.lastCheckDate = t; }
+    });
+  }
+
+  var count = function (k) { return k.history.length; };
+  var stampedToday = function (k) {
+    return k.history.some(function (h) { return h.d === state.today && !h.m; });
+  };
+  var allBooksRead = function (k) {
+    return k.booksRead.every(function (b) { return b === true; });
+  };
+
+  /* ══ Web Audio 효과음 (외부 파일 없음) ═════════════════ */
+  var actx = null;
+  function tone(freq, to, t0, dur, vol, expo) {
+    var o = actx.createOscillator(), g = actx.createGain();
+    o.connect(g); g.connect(actx.destination);
+    o.frequency.setValueAtTime(freq, t0);
+    if (expo) o.frequency.exponentialRampToValueAtTime(to, t0 + dur);
+    else o.frequency.linearRampToValueAtTime(to, t0 + dur);
+    g.gain.setValueAtTime(vol, t0);
+    g.gain.linearRampToValueAtTime(0.0001, t0 + dur);
+    o.start(t0); o.stop(t0 + dur + 0.02);
+  }
+  function playSound(type) {
+    if (state.muted) return;
+    try {
+      var AC = window.AudioContext || window.webkitAudioContext;
+      if (!AC) return;
+      if (!actx) actx = new AC();
+      if (actx.state === 'suspended') actx.resume();
+      var n = actx.currentTime;
+      if (type === 'check')        tone(380, 760, n, 0.10, 0.04, true);
+      else if (type === 'uncheck') tone(450, 220, n, 0.08, 0.04, false);
+      else if (type === 'pop')     tone(240, 640, n, 0.07, 0.04, true);
+      else if (type === 'unlock')  tone(440, 880, n, 0.12, 0.05, true);
+      else if (type === 'stamp') {           // 쿵! + 반짝
+        tone(140, 50, n, 0.12, 0.12, false);
+        tone(880, 1320, n + 0.03, 0.20, 0.06, true);
+      } else if (type === 'congrats') {      // 도미솔도미솔
+        [261.6, 329.6, 392.0, 523.2, 659.2, 784.0].forEach(function (f, i) {
+          tone(f, f, n + i * 0.07, 0.25, 0.04, false);
+        });
+      }
+    } catch (e) { /* 오디오 미지원 기기 무시 */ }
+  }
+
+  /* ══ 액션 ══════════════════════════════════════════════ */
+  function toggleBook(idx) {
+    var k = state.kids[state.active];
+    if (stampedToday(k)) return;                       // 오늘 스탬프 완료 → 잠금
+    k.booksRead[idx] = !k.booksRead[idx];
+    k.lastCheckDate = state.today;
+    playSound(k.booksRead[idx] ? 'check' : 'uncheck');
+    commit();
+  }
+
+  function pressStamp() {
+    var k = state.kids[state.active];
+    if (!allBooksRead(k) || stampedToday(k) || count(k) >= GOAL) return;
+    k.history.push({ d: state.today, m: false });
+    k.booksRead = [true, true, true];
+    playSound('stamp');
+    if (count(k) >= GOAL) { k.rewardReceived = false; celebrateSoon(state.active); }
+    commit();
+  }
+
+  function celebrateSoon(name) {
+    setTimeout(function () { state.celebrate = name; playSound('congrats'); render(); }, 320);
+  }
+
+  function adjustStamps(name, delta) {
+    var k = state.kids[name];
+    var target = Math.max(0, Math.min(GOAL, count(k) + delta));
+    while (count(k) > target) k.history.pop();
+    while (count(k) < target) k.history.push({ d: state.today, m: true });   // 부모님 수동 조정 표시
+    playSound(delta > 0 ? 'check' : 'uncheck');
+    if (count(k) >= GOAL) { k.rewardReceived = false; celebrateSoon(name); }
+    commit();
+  }
+
+  function resetToday(name) {
+    var k = state.kids[name];
+    k.history = k.history.filter(function (h) { return !(h.d === state.today && !h.m); });
+    k.booksRead = [false, false, false];
+    k.lastCheckDate = state.today;
+    playSound('pop');
+    commit();
+  }
+
+  function resetBoard(name) {
+    var keepEmoji = state.kids[name].stampEmoji;   // 고른 아이콘은 그대로 유지
+    state.kids[name] = defaultKid(name);
+    state.kids[name].stampEmoji = keepEmoji;
+    playSound('pop');
+    commit();
+  }
+
+  function commit() { save(); render(); }
+
+  /* ══ 렌더 ══════════════════════════════════════════════ */
+  var esc = function (s) { return String(s).replace(/[&<>"]/g, function (c) {
+    return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); };
+
+  function view() {
+    var k = state.kids[state.active];
+    var stamped = stampedToday(k), ready = allBooksRead(k) && !stamped && count(k) < GOAL;
+    var n = count(k);
+
+    var missions = k.booksRead.map(function (done, i) {
+      return '<button class="mission' + (done ? ' done' : '') + (stamped ? ' locked' : '') + '"' +
+        ' data-act="book" data-idx="' + i + '"' + (stamped ? ' disabled' : '') + '>' +
+        '<span class="ico">' + (done ? '✅' : '📖') + '</span>' +
+        '<span>' + BOOK_LABELS[i] + '</span></button>';
+    }).join('');
+
+    var stampLabel = n >= GOAL ? '스탬프 판을 다 채웠어요! 🎁'
+      : stamped ? '오늘 스탬프 완료! 👏'
+      : ready ? '스탬프 찍기!' : '책 3권을 다 읽어요';
+
+    var emojis = STAMP_OPTIONS.map(function (o) {
+      return '<button class="emoji-btn' + (k.stampEmoji === o.emoji ? ' on' : '') +
+        '" data-act="emoji" data-emoji="' + o.emoji + '" title="' + o.label + '">' + o.emoji + '</button>';
+    }).join('');
+
+    var slots = '';
+    for (var i = 1; i <= GOAL; i++) {
+      slots += '<div class="slot">' +
+        (i <= n ? '<div class="filled">' + k.stampEmoji + '</div>'
+                : '<div class="empty">' + i + '</div>') +
+        (i === GOAL && i > n ? '<span class="gift">🎁</span>' : '') + '</div>';
+    }
+
+    var hist = k.history.length === 0
+      ? '<div class="hist-empty">아직 찍은 스탬프가 없어요!</div>'
+      : '<div class="hist-list">' + k.history.map(function (h, i) {
+          return { h: h, no: i + 1 };
+        }).reverse().map(function (row) {
+          return '<div class="hist-row"><span><span class="idx">' + row.no + '</span>' +
+            (row.h.m ? '부모님이 채워준 스탬프' : formatKoreanDate(row.h.d)) + '</span>' +
+            '<span style="color:#A0AEC0">완료 ' + k.stampEmoji + '</span></div>';
+        }).join('') + '</div>';
+
+    return '' +
+    '<div class="wrap">' +
+      '<div class="topbar">' +
+        '<span>📅 ' + formatKoreanDate(state.today) + '</span>' +
+        '<span class="tools">' +
+          '<button data-act="mute">' + (state.muted ? '🔇 소리끔' : '🔊 소리켬') + '</button>' +
+          '<button data-act="parent">⚙️ 부모님 설정</button>' +
+        '</span>' +
+      '</div>' +
+
+      '<header>' +
+        '<div class="brand"><div class="logo">📚</div><h1>쑥쑥 영어 독서 통장</h1></div>' +
+        '<div class="tabs">' + KIDS.map(function (name) {
+          return '<button class="tab' + (state.active === name ? ' on' : '') +
+            '" data-name="' + name + '" data-act="tab">' + name + '</button>';
+        }).join('') + '</div>' +
+      '</header>' +
+
+      '<main>' +
+        '<section class="col-left">' +
+          '<div class="card">' +
+            '<div class="label">TODAY MISSION</div>' +
+            '<div class="mission-title">오늘의 책 읽기</div>' +
+            '<div class="missions">' + missions + '</div>' +
+            '<button class="stamp-btn ' + (ready ? 'ready' : 'off') + '" data-act="stamp"' +
+              (ready ? '' : ' disabled') + '>' + stampLabel + '</button>' +
+          '</div>' +
+          '<div class="card" style="padding:22px">' +
+            '<div class="label">🎨 나의 스탬프 아이콘 고르기</div>' +
+            '<div class="emoji-grid">' + emojis + '</div>' +
+          '</div>' +
+        '</section>' +
+
+        '<section class="col-right card">' +
+          '<div class="board-head">' +
+            '<h2>' + esc(k.name) + '이의 스탬프 판<span class="count">(' + n + '/' + GOAL + ')</span></h2>' +
+            '<button class="link-btn" data-act="reset-board" data-name="' + k.name + '">스탬프 리셋</button>' +
+          '</div>' +
+          '<div class="grid30">' + slots + '</div>' +
+          '<div class="history"><div class="label">스탬프 획득 기록 📅</div>' + hist + '</div>' +
+        '</section>' +
+      '</main>' +
+
+      '<div class="advice"><b>📚 부모님과의 기쁜 약속</b> · 30개의 스탬프를 가득 모으면 ' +
+        '약속했던 멋진 칭찬 선물을 함께 나누어 보아요!</div>' +
+      '<footer>쑥쑥 영어 독서 통장 © 2026 · 민건이와 민결이의 책정원 🌸</footer>' +
+    '</div>' +
+    celebrateView() + parentView();
+  }
+
+  function celebrateView() {
+    if (!state.celebrate) return '';
+    var pieces = '';
+    for (var i = 0; i < 44; i++) {
+      pieces += '<i style="left:' + (Math.random() * 100).toFixed(1) + '%;background:' +
+        CONFETTI_COLORS[i % CONFETTI_COLORS.length] + ';animation-delay:' +
+        (Math.random() * 3).toFixed(2) + 's"></i>';
+    }
+    return '<div class="modal-bg">' +
+      '<div class="confetti">' + pieces + '</div>' +
+      '<div class="modal celebrate">' +
+        '<div class="party">🎉</div>' +
+        '<h2>30개 달성 성공!</h2>' +
+        '<p>와아! 정말 대단해요, <b style="color:var(--accent)">' + esc(state.celebrate) + '</b>!<br>' +
+          '엄마, 아빠가 약속한 멋진 선물을 받으러 가요! 🎁🏆</p>' +
+        '<button class="btn-gold" data-act="reward">최고예요! 선물 받기! 🏆</button>' +
+        '<button class="btn-ghost" data-act="restart">새 스탬프 판으로 다시 도전하기 🔄</button>' +
+      '</div></div>';
+  }
+
+  function parentView() {
+    if (!state.parentOpen) return '';
+    var body;
+    if (!state.parentUnlocked) {
+      body = '<p class="gate-desc">아이들이 임의로 조작하지 않도록<br>수학 문제를 풀어 안심 장치를 풀어주세요.</p>' +
+        '<div class="quiz">' + state.quiz.a + ' + ' + state.quiz.b + ' = ?</div>' +
+        '<div class="quiz-row">' +
+          '<input id="quizInput" type="number" inputmode="numeric" placeholder="정답" />' +
+          '<button data-act="verify">확인</button>' +
+        '</div>' +
+        (state.quizError ? '<p class="quiz-msg">정답이 달라요! 다시 확인해 주세요.</p>' : '');
+    } else {
+      body = '<div class="unlocked-tag">🔓 부모님 모드가 해제되었습니다. 스탬프 강제 조정과 미션 리셋이 가능합니다.</div>' +
+        KIDS.map(function (name) {
+          var k = state.kids[name], n = count(k);
+          return '<div class="kid-box">' +
+            '<div class="top"><span>' + name + '이 스탬프 조절</span><span>현재: ' + n + '개</span></div>' +
+            '<div class="stepper"><span>스탬프 조절</span><span class="ctrl">' +
+              '<button data-act="minus" data-name="' + name + '"' + (n <= 0 ? ' disabled' : '') + '>−</button>' +
+              '<span class="val">' + n + '</span>' +
+              '<button data-act="plus" data-name="' + name + '"' + (n >= GOAL ? ' disabled' : '') + '>+</button>' +
+            '</span></div>' +
+            '<div class="row">' +
+              '<button class="btn-plain" data-act="reset-today" data-name="' + name + '">오늘의 독서 리셋</button>' +
+              '<button class="btn-danger" data-act="reset-board" data-name="' + name + '">전체 리셋</button>' +
+            '</div></div>';
+        }).join('') +
+        '<button class="btn-dark" data-act="close-parent" style="margin-top:6px">관리 모드 종료</button>';
+    }
+    return '<div class="modal-bg"><div class="modal">' +
+      '<div class="modal-head"><h3>부모님 관리 모드</h3>' +
+        '<button data-act="close-parent">&times;</button></div>' + body + '</div></div>';
+  }
+
+  function render() {
+    document.body.setAttribute('data-child', state.active);
+    document.getElementById('root').innerHTML = view();
+    var q = document.getElementById('quizInput');
+    if (q) q.focus();
+  }
+
+  /* ══ 이벤트 (위임) ═════════════════════════════════════ */
+  document.addEventListener('click', function (e) {
+    var el = e.target.closest('[data-act]');
+    if (!el || el.disabled) return;
+    var act = el.dataset.act, name = el.dataset.name;
+
+    switch (act) {
+      case 'tab':    playSound('pop'); state.active = name; render(); break;
+      case 'mute':   state.muted = !state.muted; save(); playSound('pop'); render(); break;
+      case 'book':   toggleBook(+el.dataset.idx); break;
+      case 'stamp':  pressStamp(); break;
+      case 'emoji':
+        playSound('pop');
+        state.kids[state.active].stampEmoji = el.dataset.emoji;
+        commit(); break;
+
+      case 'parent':
+        playSound('pop');
+        state.quiz = { a: Math.floor(Math.random() * 8) + 2, b: Math.floor(Math.random() * 8) + 2 };
+        state.quizError = false; state.parentUnlocked = false; state.parentOpen = true;
+        render(); break;
+      case 'verify': verifyQuiz(); break;
+      case 'close-parent':
+        playSound('pop'); state.parentOpen = false; state.parentUnlocked = false; render(); break;
+
+      case 'plus':   adjustStamps(name, 1); break;
+      case 'minus':  adjustStamps(name, -1); break;
+      case 'reset-today': resetToday(name); break;
+      case 'reset-board':
+        if (confirm(name + '이의 스탬프 판을 정말 초기화할까요?\n(모아둔 스탬프와 기록이 모두 사라져요)')) {
+          resetBoard(name);
+        }
+        break;
+
+      case 'reward':
+        playSound('pop');
+        state.kids[state.celebrate].rewardReceived = true;
+        state.celebrate = null; commit(); break;
+      case 'restart':
+        var who = state.celebrate; state.celebrate = null; resetBoard(who); break;
+    }
+  });
+
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Enter' && document.activeElement && document.activeElement.id === 'quizInput') {
+      verifyQuiz();
+    }
+  });
+
+  function verifyQuiz() {
+    var input = document.getElementById('quizInput');
+    if (!input) return;
+    if (parseInt(input.value, 10) === state.quiz.a + state.quiz.b) {
+      playSound('unlock'); state.parentUnlocked = true; state.quizError = false;
+    } else {
+      playSound('uncheck'); state.quizError = true;
+    }
+    render();
+  }
+
+  /* 앱을 켜둔 채 자정을 넘겨도 오늘 미션이 새로 시작되도록 */
+  function checkDate() {
+    var t = todayStr();
+    if (t !== state.today) { state.today = t; rollover(); commit(); }
+  }
+  document.addEventListener('visibilitychange', function () { if (!document.hidden) checkDate(); });
+  window.addEventListener('focus', checkDate);
+  setInterval(checkDate, 60000);
+
+  load();
+  render();
+})();
+</script>
+</body>
+</html>
