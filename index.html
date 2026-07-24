@@ -15,9 +15,6 @@
     --accent:#3B82F6; --accent-soft:#EFF6FF; --accent-line:#BFDBFE;
     --radius:32px;
   }
-  body[data-child="민결"]{
-    --accent:#EC4899; --accent-soft:#FDF2F8; --accent-line:#FBCFE8;
-  }
   *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
   html,body{margin:0;padding:0}
   body{
@@ -44,12 +41,10 @@
   .brand .logo{width:42px;height:42px;border-radius:50%;background:#FACC15;display:flex;
     align-items:center;justify-content:center;font-size:22px;box-shadow:0 1px 3px rgba(0,0,0,.08)}
   .brand h1{margin:0;font-size:24px;font-weight:800;letter-spacing:-.5px}
-  .tabs{display:flex;gap:4px;background:#EDF2F7;padding:5px;border-radius:18px}
-  .tab{padding:9px 30px;border-radius:14px;font-size:17px;font-weight:800;color:var(--muted);
+  .tabs{display:flex;flex-wrap:wrap;gap:4px;background:#EDF2F7;padding:5px;border-radius:18px}
+  .tab{padding:9px 26px;border-radius:14px;font-size:17px;font-weight:800;color:var(--muted);
     transition:all .18s}
-  .tab.on{background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.07)}
-  .tab.on[data-name="민건"]{color:#3B82F6}
-  .tab.on[data-name="민결"]{color:#EC4899}
+  .tab.on{background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.07);color:var(--accent)}
 
   /* ── Layout ────────────────────────────────────────────── */
   main{display:flex;gap:26px;align-items:stretch}
@@ -163,6 +158,21 @@
 
   .unlocked-tag{background:#ECFDF5;border:1px solid #D1FAE5;color:#047857;padding:12px 14px;
     border-radius:16px;font-size:12px;font-weight:700;margin-bottom:18px}
+
+  /* ── 구성원(이름) 관리 ─────────────────────────────────── */
+  .manage{border:1px solid var(--line);border-radius:18px;padding:16px;background:#FAFCFE;margin-bottom:18px}
+  .manage .sec-label{font-size:12px;font-weight:800;color:var(--sub);margin-bottom:12px}
+  .user-row{display:flex;gap:8px;align-items:center;margin-bottom:8px}
+  .user-row:last-child{margin-bottom:0}
+  .user-row .uname{flex:1;min-width:0;padding:10px 12px;border-radius:12px;border:2px solid var(--line);
+    background:#fff;font-size:14px;font-weight:700;font-family:inherit;color:var(--ink);outline:none}
+  .user-row .uname:focus{border-color:var(--ink)}
+  .user-row button{padding:10px 12px;border-radius:12px;font-size:11px;font-weight:800;white-space:nowrap}
+  .user-row .swatch{width:12px;height:12px;border-radius:50%;flex:none}
+  .user-row.add{margin-top:12px;padding-top:14px;border-top:1px dashed #E2E8F0}
+  .btn-dark2{background:#1F2937;color:#fff}
+  .manage .hint{font-size:11px;font-weight:600;color:var(--muted);margin:10px 0 0;line-height:1.6}
+
   .kid-box{border:1px solid var(--line);border-radius:18px;padding:16px;background:#FAFCFE;margin-bottom:14px}
   .kid-box .top{display:flex;justify-content:space-between;align-items:center;padding-bottom:10px;
     margin-bottom:12px;border-bottom:1px dashed #E2E8F0;font-size:13px;font-weight:800}
@@ -191,7 +201,7 @@
     header{padding:14px 0 16px;margin-bottom:18px}
     .brand h1{font-size:20px}
     .tabs{width:100%}
-    .tab{flex:1;padding:10px 0;text-align:center}
+    .tab{flex:1;padding:10px 0;text-align:center;min-width:64px}
     .mission-title{font-size:25px}
     .mission{padding:15px 16px;font-size:16px;gap:14px}
     .mission .ico{font-size:27px}
@@ -210,9 +220,10 @@
   'use strict';
 
   /* ══ 설정 ══════════════════════════════════════════════ */
-  var KIDS = ['민건', '민결'];
-  var GOAL = 30;                     // 스탬프 판 한 장 = 30칸
-  var BOOKS_PER_DAY = 3;             // 하루 미션: 영어책 3권
+  var DEFAULT_NAMES = ['민건', '민결'];   // 저장된 구성원이 없을 때 처음 만들어지는 기본 구성원
+  var MAX_KIDS = 6;                       // 구성원 최대 인원
+  var GOAL = 30;                          // 스탬프 판 한 장 = 30칸
+  var BOOKS_PER_DAY = 3;                  // 하루 미션: 영어책 3권
   var STORAGE_KEY = 'kids_reading_stamps_v4';
 
   var STAMP_OPTIONS = [
@@ -223,6 +234,29 @@
   ];
   var BOOK_LABELS = ['첫 번째 영어 책 읽기', '두 번째 영어 책 읽기', '세 번째 영어 책 읽기'];
   var CONFETTI_COLORS = ['#FACC15', '#60A5FA', '#F472B6', '#34D399', '#A78BFA', '#FB923C'];
+
+  // 구성원별 테마 색 (0번=파랑, 1번=분홍 … 기존 민건/민결 색을 그대로 유지)
+  var PALETTE = [
+    { accent: '#3B82F6', soft: '#EFF6FF', line: '#BFDBFE' }, // 파랑
+    { accent: '#EC4899', soft: '#FDF2F8', line: '#FBCFE8' }, // 분홍
+    { accent: '#10B981', soft: '#ECFDF5', line: '#A7F3D0' }, // 초록
+    { accent: '#8B5CF6', soft: '#F5F3FF', line: '#DDD6FE' }, // 보라
+    { accent: '#F97316', soft: '#FFF7ED', line: '#FFEDD5' }, // 주황
+    { accent: '#0EA5E9', soft: '#F0F9FF', line: '#BAE6FD' }  // 하늘
+  ];
+
+  /* ══ 이름/문자 유틸 ════════════════════════════════════ */
+  var esc = function (s) { return String(s).replace(/[&<>"]/g, function (c) {
+    return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); };
+
+  // 한글 받침 있는 이름엔 다정한 '이'를 붙임 (민건→민건이, 지아→지아). 결과는 항상 모음으로 끝나 '~의/~와'가 자연스러움
+  function nick(name) {
+    name = String(name == null ? '' : name).trim();
+    if (!name) return name;
+    var last = name.charCodeAt(name.length - 1);
+    var hasBatchim = last >= 0xAC00 && last <= 0xD7A3 && ((last - 0xAC00) % 28 !== 0);
+    return hasBatchim ? name + '이' : name;
+  }
 
   /* ══ 날짜 유틸 ═════════════════════════════════════════ */
   function todayStr() {
@@ -242,7 +276,8 @@
   /* ══ 상태 ══════════════════════════════════════════════ */
   var state = {
     kids: null,
-    active: KIDS[0],
+    order: [],           // 구성원 이름 순서 (탭 순서)
+    active: null,
     muted: false,
     today: todayStr(),
     parentOpen: false,
@@ -252,7 +287,8 @@
     celebrate: null
   };
 
-  function defaultKid(name) {
+  function defaultKid(name, idx) {
+    idx = idx || 0;
     return {
       name: name,
       booksRead: [false, false, false],
@@ -260,46 +296,70 @@
       // history: [{ d:'YYYY-MM-DD', m:true(부모님 수동 조정) }] — 스탬프 개수는 여기서 파생
       history: [],
       rewardReceived: false,
-      stampEmoji: name === KIDS[0] ? '🦊' : '🐼'
+      stampEmoji: STAMP_OPTIONS[idx % STAMP_OPTIONS.length].emoji,
+      colorIndex: idx % PALETTE.length
     };
   }
 
   function load() {
-    var data = {};
+    var data = {}, order = null;
     try {
       var raw = localStorage.getItem(STORAGE_KEY);
       if (raw) {
         var saved = JSON.parse(raw);
-        data = saved.kids || {};
-        state.muted = !!saved.muted;
+        data = (saved && typeof saved.kids === 'object' && saved.kids) ? saved.kids : {};
+        state.muted = !!(saved && saved.muted);
+        if (saved && Array.isArray(saved.order)) order = saved.order.slice();
       }
-    } catch (e) { data = {}; }
+    } catch (e) { data = {}; order = null; }
 
-    KIDS.forEach(function (name) {
-      var k = data[name];
-      if (!k || typeof k !== 'object') { data[name] = defaultKid(name); return; }
-      k.name = name;
+    // 구성원 순서 결정: 저장된 order 우선, 없으면 기존 데이터 키 순서
+    var names = (order && order.length)
+      ? order.filter(function (nm) { return data[nm]; })
+      : Object.keys(data);
+    // order엔 없지만 데이터엔 남아있는 이름 보정
+    Object.keys(data).forEach(function (nm) { if (names.indexOf(nm) < 0) names.push(nm); });
+    // 아무 구성원도 없으면 기본 구성원 생성
+    if (names.length === 0) {
+      names = DEFAULT_NAMES.slice();
+      names.forEach(function (nm, i) { data[nm] = defaultKid(nm, i); });
+    }
+
+    // 각 구성원 데이터 정규화 (옛 데이터에 없던 필드 보정)
+    names.forEach(function (nm, i) {
+      var k = data[nm];
+      if (!k || typeof k !== 'object') { data[nm] = defaultKid(nm, i); return; }
+      k.name = nm;
       if (!Array.isArray(k.history)) k.history = [];
       if (!Array.isArray(k.booksRead) || k.booksRead.length !== BOOKS_PER_DAY) {
         k.booksRead = [false, false, false];
       }
-      if (!k.stampEmoji) k.stampEmoji = defaultKid(name).stampEmoji;
+      if (!k.stampEmoji) k.stampEmoji = STAMP_OPTIONS[i % STAMP_OPTIONS.length].emoji;
+      if (typeof k.colorIndex !== 'number') k.colorIndex = i % PALETTE.length;
+      k.rewardReceived = !!k.rewardReceived;
+      if (!k.lastCheckDate) k.lastCheckDate = state.today;
     });
+
     state.kids = data;
+    state.order = names;
+    if (names.indexOf(state.active) < 0) state.active = names[0];
     rollover();
   }
 
   function save() {
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify({ kids: state.kids, muted: state.muted }));
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({
+        kids: state.kids, order: state.order, muted: state.muted
+      }));
     } catch (e) { /* 저장 공간이 없어도 앱은 계속 동작 */ }
   }
 
   /* 날짜가 바뀌면 오늘의 미션을 새로 시작 */
   function rollover() {
     var t = state.today;
-    KIDS.forEach(function (name) {
+    state.order.forEach(function (name) {
       var k = state.kids[name];
+      if (!k) return;
       if (stampedToday(k)) { k.booksRead = [true, true, true]; k.lastCheckDate = t; }
       else if (k.lastCheckDate !== t) { k.booksRead = [false, false, false]; k.lastCheckDate = t; }
     });
@@ -392,9 +452,60 @@
   }
 
   function resetBoard(name) {
-    var keepEmoji = state.kids[name].stampEmoji;   // 고른 아이콘은 그대로 유지
-    state.kids[name] = defaultKid(name);
-    state.kids[name].stampEmoji = keepEmoji;
+    var old = state.kids[name];
+    var fresh = defaultKid(name, 0);
+    fresh.stampEmoji = old.stampEmoji;     // 고른 아이콘과 색은 그대로 유지
+    fresh.colorIndex = old.colorIndex;
+    state.kids[name] = fresh;
+    playSound('pop');
+    commit();
+  }
+
+  /* ── 구성원 이름 변경 / 추가 / 삭제 ────────────────────── */
+  function renameKid(idx) {
+    var oldName = state.order[idx];
+    if (oldName == null) return;
+    var input = document.getElementById('rnInput' + idx);
+    if (!input) return;
+    var newName = input.value.trim();
+    if (!newName) { alert('이름을 입력해 주세요.'); return; }
+    if (newName === oldName) return;                      // 변경 없음
+    if (state.kids[newName]) { alert('이미 같은 이름이 있어요. 다른 이름을 입력해 주세요.'); return; }
+    var k = state.kids[oldName];
+    k.name = newName;
+    state.kids[newName] = k;
+    delete state.kids[oldName];
+    state.order[idx] = newName;
+    if (state.active === oldName) state.active = newName;
+    if (state.celebrate === oldName) state.celebrate = newName;
+    playSound('unlock');
+    commit();
+  }
+
+  function addKid() {
+    var input = document.getElementById('newUser');
+    if (!input) return;
+    var name = input.value.trim();
+    if (!name) { alert('이름을 입력해 주세요.'); return; }
+    if (state.kids[name]) { alert('이미 같은 이름이 있어요.'); return; }
+    if (state.order.length >= MAX_KIDS) { alert('구성원은 최대 ' + MAX_KIDS + '명까지 추가할 수 있어요.'); return; }
+    var idx = state.order.length;
+    state.kids[name] = defaultKid(name, idx);
+    state.order.push(name);
+    state.active = name;                                  // 새 구성원 탭으로 이동
+    playSound('check');
+    commit();
+  }
+
+  function deleteKid(idx) {
+    var name = state.order[idx];
+    if (name == null) return;
+    if (state.order.length <= 1) { alert('최소 한 명은 있어야 해요.'); return; }
+    if (!confirm('“' + name + '” 구성원을 삭제할까요?\n모아둔 스탬프와 기록이 모두 사라져요.')) return;
+    delete state.kids[name];
+    state.order.splice(idx, 1);
+    if (state.active === name) state.active = state.order[0];
+    if (state.celebrate === name) state.celebrate = null;
     playSound('pop');
     commit();
   }
@@ -402,9 +513,6 @@
   function commit() { save(); render(); }
 
   /* ══ 렌더 ══════════════════════════════════════════════ */
-  var esc = function (s) { return String(s).replace(/[&<>"]/g, function (c) {
-    return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); };
-
   function view() {
     var k = state.kids[state.active];
     var stamped = stampedToday(k), ready = allBooksRead(k) && !stamped && count(k) < GOAL;
@@ -444,6 +552,13 @@
             '<span style="color:#A0AEC0">완료 ' + k.stampEmoji + '</span></div>';
         }).join('') + '</div>';
 
+    var tabs = state.order.map(function (name) {
+      return '<button class="tab' + (state.active === name ? ' on' : '') +
+        '" data-name="' + esc(name) + '" data-act="tab">' + esc(name) + '</button>';
+    }).join('');
+
+    var garden = state.order.map(function (nm) { return nick(nm); }).join('와 ');
+
     return '' +
     '<div class="wrap">' +
       '<div class="topbar">' +
@@ -456,10 +571,7 @@
 
       '<header>' +
         '<div class="brand"><div class="logo">📚</div><h1>쑥쑥 영어 독서 통장</h1></div>' +
-        '<div class="tabs">' + KIDS.map(function (name) {
-          return '<button class="tab' + (state.active === name ? ' on' : '') +
-            '" data-name="' + name + '" data-act="tab">' + name + '</button>';
-        }).join('') + '</div>' +
+        '<div class="tabs">' + tabs + '</div>' +
       '</header>' +
 
       '<main>' +
@@ -479,8 +591,8 @@
 
         '<section class="col-right card">' +
           '<div class="board-head">' +
-            '<h2>' + esc(k.name) + '이의 스탬프 판<span class="count">(' + n + '/' + GOAL + ')</span></h2>' +
-            '<button class="link-btn" data-act="reset-board" data-name="' + k.name + '">스탬프 리셋</button>' +
+            '<h2>' + esc(nick(k.name)) + '의 스탬프 판<span class="count">(' + n + '/' + GOAL + ')</span></h2>' +
+            '<button class="link-btn" data-act="reset-board" data-name="' + esc(k.name) + '">스탬프 리셋</button>' +
           '</div>' +
           '<div class="grid30">' + slots + '</div>' +
           '<div class="history"><div class="label">스탬프 획득 기록 📅</div>' + hist + '</div>' +
@@ -489,7 +601,7 @@
 
       '<div class="advice"><b>📚 부모님과의 기쁜 약속</b> · 30개의 스탬프를 가득 모으면 ' +
         '약속했던 멋진 칭찬 선물을 함께 나누어 보아요!</div>' +
-      '<footer>쑥쑥 영어 독서 통장 © 2026 · 민건이와 민결이의 책정원 🌸</footer>' +
+      '<footer>쑥쑥 영어 독서 통장 © 2026 · ' + esc(garden) + '의 책정원 🌸</footer>' +
     '</div>' +
     celebrateView() + parentView();
   }
@@ -507,7 +619,7 @@
       '<div class="modal celebrate">' +
         '<div class="party">🎉</div>' +
         '<h2>30개 달성 성공!</h2>' +
-        '<p>와아! 정말 대단해요, <b style="color:var(--accent)">' + esc(state.celebrate) + '</b>!<br>' +
+        '<p>와아! 정말 대단해요, <b style="color:var(--accent)">' + esc(nick(state.celebrate)) + '</b>!<br>' +
           '엄마, 아빠가 약속한 멋진 선물을 받으러 가요! 🎁🏆</p>' +
         '<button class="btn-gold" data-act="reward">최고예요! 선물 받기! 🏆</button>' +
         '<button class="btn-ghost" data-act="restart">새 스탬프 판으로 다시 도전하기 🔄</button>' +
@@ -526,21 +638,49 @@
         '</div>' +
         (state.quizError ? '<p class="quiz-msg">정답이 달라요! 다시 확인해 주세요.</p>' : '');
     } else {
-      body = '<div class="unlocked-tag">🔓 부모님 모드가 해제되었습니다. 스탬프 강제 조정과 미션 리셋이 가능합니다.</div>' +
-        KIDS.map(function (name) {
-          var k = state.kids[name], n = count(k);
-          return '<div class="kid-box">' +
-            '<div class="top"><span>' + name + '이 스탬프 조절</span><span>현재: ' + n + '개</span></div>' +
-            '<div class="stepper"><span>스탬프 조절</span><span class="ctrl">' +
-              '<button data-act="minus" data-name="' + name + '"' + (n <= 0 ? ' disabled' : '') + '>−</button>' +
-              '<span class="val">' + n + '</span>' +
-              '<button data-act="plus" data-name="' + name + '"' + (n >= GOAL ? ' disabled' : '') + '>+</button>' +
-            '</span></div>' +
-            '<div class="row">' +
-              '<button class="btn-plain" data-act="reset-today" data-name="' + name + '">오늘의 독서 리셋</button>' +
-              '<button class="btn-danger" data-act="reset-board" data-name="' + name + '">전체 리셋</button>' +
-            '</div></div>';
-        }).join('') +
+      // 구성원(이름) 관리
+      var canDelete = state.order.length > 1;
+      var manageRows = state.order.map(function (name, i) {
+        var c = PALETTE[(state.kids[name].colorIndex || 0) % PALETTE.length];
+        return '<div class="user-row">' +
+          '<span class="swatch" style="background:' + c.accent + '"></span>' +
+          '<input id="rnInput' + i + '" class="uname" type="text" maxlength="10" value="' + esc(name) + '" />' +
+          '<button class="btn-plain" data-act="rename" data-idx="' + i + '">저장</button>' +
+          '<button class="btn-danger" data-act="del-user" data-idx="' + i + '"' +
+            (canDelete ? '' : ' disabled') + '>삭제</button>' +
+        '</div>';
+      }).join('');
+      var addRow = state.order.length < MAX_KIDS
+        ? '<div class="user-row add">' +
+            '<input id="newUser" class="uname" type="text" maxlength="10" placeholder="새 구성원 이름" />' +
+            '<button class="btn-dark2" data-act="add-user">+ 추가</button>' +
+          '</div>'
+        : '<p class="hint">구성원은 최대 ' + MAX_KIDS + '명까지 추가할 수 있어요.</p>';
+
+      var manage = '<div class="manage">' +
+        '<div class="sec-label">👶 구성원 이름 관리</div>' +
+        manageRows + addRow +
+        '<p class="hint">이름을 바꾼 뒤 <b>저장</b>을 눌러 주세요. 스탬프 기록은 그대로 유지됩니다.</p>' +
+      '</div>';
+
+      // 구성원별 스탬프 조절
+      var boxes = state.order.map(function (name) {
+        var k = state.kids[name], n = count(k);
+        return '<div class="kid-box">' +
+          '<div class="top"><span>' + esc(nick(name)) + ' 스탬프 조절</span><span>현재: ' + n + '개</span></div>' +
+          '<div class="stepper"><span>스탬프 조절</span><span class="ctrl">' +
+            '<button data-act="minus" data-name="' + esc(name) + '"' + (n <= 0 ? ' disabled' : '') + '>−</button>' +
+            '<span class="val">' + n + '</span>' +
+            '<button data-act="plus" data-name="' + esc(name) + '"' + (n >= GOAL ? ' disabled' : '') + '>+</button>' +
+          '</span></div>' +
+          '<div class="row">' +
+            '<button class="btn-plain" data-act="reset-today" data-name="' + esc(name) + '">오늘의 독서 리셋</button>' +
+            '<button class="btn-danger" data-act="reset-board" data-name="' + esc(name) + '">전체 리셋</button>' +
+          '</div></div>';
+      }).join('');
+
+      body = '<div class="unlocked-tag">🔓 부모님 모드가 해제되었습니다. 이름 관리와 스탬프 조정이 가능합니다.</div>' +
+        manage + boxes +
         '<button class="btn-dark" data-act="close-parent" style="margin-top:6px">관리 모드 종료</button>';
     }
     return '<div class="modal-bg"><div class="modal">' +
@@ -549,6 +689,11 @@
   }
 
   function render() {
+    var k = state.kids[state.active];
+    var c = PALETTE[((k && typeof k.colorIndex === 'number') ? k.colorIndex : 0) % PALETTE.length];
+    document.body.style.setProperty('--accent', c.accent);
+    document.body.style.setProperty('--accent-soft', c.soft);
+    document.body.style.setProperty('--accent-line', c.line);
     document.body.setAttribute('data-child', state.active);
     document.getElementById('root').innerHTML = view();
     var q = document.getElementById('quizInput');
@@ -580,11 +725,15 @@
       case 'close-parent':
         playSound('pop'); state.parentOpen = false; state.parentUnlocked = false; render(); break;
 
+      case 'rename':   renameKid(+el.dataset.idx); break;
+      case 'add-user': addKid(); break;
+      case 'del-user': deleteKid(+el.dataset.idx); break;
+
       case 'plus':   adjustStamps(name, 1); break;
       case 'minus':  adjustStamps(name, -1); break;
       case 'reset-today': resetToday(name); break;
       case 'reset-board':
-        if (confirm(name + '이의 스탬프 판을 정말 초기화할까요?\n(모아둔 스탬프와 기록이 모두 사라져요)')) {
+        if (confirm(nick(name) + '의 스탬프 판을 정말 초기화할까요?\n(모아둔 스탬프와 기록이 모두 사라져요)')) {
           resetBoard(name);
         }
         break;
