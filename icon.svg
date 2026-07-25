@@ -1,0 +1,54 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#FFDA61"/>
+      <stop offset="1" stop-color="#FBAB1F"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="0.5" cy="0.26" r="0.75">
+      <stop offset="0" stop-color="#FFFFFF" stop-opacity="0.38"/>
+      <stop offset="0.62" stop-color="#FFFFFF" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="leafL" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#74D194"/><stop offset="1" stop-color="#3EA968"/>
+    </linearGradient>
+    <linearGradient id="leafR" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#5EC282"/><stop offset="1" stop-color="#2F9A5A"/>
+    </linearGradient>
+  </defs>
+
+  <!-- background (full-bleed; the OS rounds/masks the corners) -->
+  <rect width="512" height="512" fill="url(#bg)"/>
+  <rect width="512" height="512" fill="url(#glow)"/>
+
+  <g transform="translate(256 250) scale(1.2) translate(-256 -256)">
+  <!-- soft shadow under the book -->
+  <ellipse cx="256" cy="366" rx="128" ry="18" fill="#7A4800" opacity="0.17"/>
+
+  <!-- sprout -->
+  <path d="M256 300 C 250 250 250 210 256 164" fill="none" stroke="#2E9E57" stroke-width="13" stroke-linecap="round"/>
+  <path d="M252 232 C 214 232 188 210 190 184 C 220 186 248 206 252 232 Z" fill="url(#leafL)"/>
+  <path d="M260 216 C 300 210 328 184 324 160 C 292 164 262 188 260 216 Z" fill="url(#leafR)"/>
+  <path d="M247 228 C 227 218 209 202 197 190" fill="none" stroke="#2C8A51" stroke-width="4" stroke-linecap="round" opacity="0.45"/>
+  <path d="M265 212 C 288 202 306 186 317 172" fill="none" stroke="#27804A" stroke-width="4" stroke-linecap="round" opacity="0.45"/>
+  <circle cx="256" cy="162" r="10" fill="#7FD99F"/>
+
+  <!-- open book -->
+  <path d="M256 278 C 214 262 180 250 150 248 L 150 320 C 186 330 222 344 256 352 Z" fill="#FFFFFF"/>
+  <path d="M256 278 C 298 262 332 250 362 248 L 362 320 C 326 330 290 344 256 352 Z" fill="#E9F0FA"/>
+  <g stroke="#C4D3E6" stroke-width="6" stroke-linecap="round" fill="none">
+    <path d="M170 274 C 196 268 222 272 240 280"/>
+    <path d="M166 292 C 194 286 220 290 240 298"/>
+    <path d="M168 310 C 194 306 218 308 238 316"/>
+  </g>
+  <g stroke="#CCD9E9" stroke-width="6" stroke-linecap="round" fill="none">
+    <path d="M272 280 C 290 272 316 268 342 274"/>
+    <path d="M272 298 C 290 290 316 286 346 292"/>
+    <path d="M274 316 C 290 308 314 306 344 310"/>
+  </g>
+  <path d="M256 278 L 256 352" fill="none" stroke="#EAB048" stroke-width="6" stroke-linecap="round"/>
+
+  <!-- sparkles -->
+  <path d="M352 176 C 355 191 358 194 373 197 C 358 200 355 203 352 218 C 349 203 346 200 331 197 C 346 194 349 191 352 176 Z" fill="#FFFDF5"/>
+  <path d="M181 170 C 183 179 185 181 194 183 C 185 185 183 187 181 196 C 179 187 177 185 168 183 C 177 181 179 179 181 170 Z" fill="#FFFDF5" opacity="0.92"/>
+  </g>
+</svg>
