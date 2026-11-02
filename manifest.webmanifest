@@ -1,7 +1,7 @@
 {
-  "name": "쑥쑥 영어 독서 통장",
+  "name": "쑥쑥 독서 통장",
   "short_name": "독서통장",
-  "description": "매일 영어책을 읽고 스탬프를 모으는 아이들 영어 독서 통장",
+  "description": "매일 책을 읽고 스탬프를 모으는 아이들 독서 통장",
   "lang": "ko",
   "start_url": ".",
   "scope": ".",
